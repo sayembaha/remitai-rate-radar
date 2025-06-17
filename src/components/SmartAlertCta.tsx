@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Bell } from "lucide-react";
@@ -17,7 +16,6 @@ export default function SmartAlertCta() {
         toast({
           title: "Alert Set!",
           description: `We'll notify you when USD/BDT is ${direction} ${limit}`,
-          icon: <Bell className="w-5 h-5 text-blue-600" />,
         });
         setLimit("");
       }}
