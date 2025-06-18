@@ -13,8 +13,6 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 );
 
-const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
-
 interface ExchangeRate {
   platform_name: string;
   exchange_rate: number;
@@ -37,6 +35,21 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     console.log('Starting alert check...');
+
+    // Check if Resend API key is available
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+    if (!resendApiKey) {
+      console.error('RESEND_API_KEY environment variable is not set');
+      return new Response(JSON.stringify({ 
+        error: 'Email service not configured. RESEND_API_KEY is missing.' 
+      }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
+    }
+
+    console.log('Resend API key found, initializing client...');
+    const resend = new Resend(resendApiKey);
 
     // Get current exchange rates
     const { data: rates, error: ratesError } = await supabase
@@ -91,21 +104,27 @@ const handler = async (req: Request): Promise<Response> => {
       if (shouldTrigger) {
         console.log(`Triggering alert for ${alert.email}: ${alert.direction} ${alert.threshold_rate}`);
         
-        // Send email notification
-        await sendNotificationEmail(alert, currentBestRate, rates as ExchangeRate[]);
-        
-        // Update alert with last triggered info
-        await supabase
-          .from('email_alerts')
-          .update({
-            last_triggered_at: new Date().toISOString(),
-            last_triggered_rate: currentBestRate,
-            notification_count: (alert as any).notification_count ? (alert as any).notification_count + 1 : 1,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', alert.id);
+        try {
+          // Send email notification
+          await sendNotificationEmail(resend, alert, currentBestRate, rates as ExchangeRate[]);
+          
+          // Update alert with last triggered info
+          await supabase
+            .from('email_alerts')
+            .update({
+              last_triggered_at: new Date().toISOString(),
+              last_triggered_rate: currentBestRate,
+              notification_count: (alert as any).notification_count ? (alert as any).notification_count + 1 : 1,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', alert.id);
 
-        notificationsSent++;
+          notificationsSent++;
+          console.log(`Successfully sent notification to ${alert.email}`);
+        } catch (emailError) {
+          console.error(`Failed to send notification to ${alert.email}:`, emailError);
+          // Continue with other alerts even if one fails
+        }
       }
     }
 
@@ -146,7 +165,7 @@ function checkIfAlertShouldTrigger(alert: EmailAlert, currentRate: number): bool
   }
 }
 
-async function sendNotificationEmail(alert: EmailAlert, currentRate: number, rates: ExchangeRate[]) {
+async function sendNotificationEmail(resend: any, alert: EmailAlert, currentRate: number, rates: ExchangeRate[]) {
   const aiPickPlatform = rates.find(r => r.is_ai_pick)?.platform_name || 'Wise';
   
   const emailHtml = `
@@ -172,7 +191,7 @@ async function sendNotificationEmail(alert: EmailAlert, currentRate: number, rat
       </div>
 
       <div style="text-align: center; margin: 30px 0;">
-        <a href="https://vcuwakrhtojxhmshaikw.supabase.co" 
+        <a href="https://remitai-rate-radar.lovable.app" 
            style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
           View Current Rates
         </a>
@@ -194,6 +213,7 @@ async function sendNotificationEmail(alert: EmailAlert, currentRate: number, rat
     });
 
     console.log(`Email sent successfully to ${alert.email}:`, emailResponse);
+    return emailResponse;
   } catch (error) {
     console.error(`Failed to send email to ${alert.email}:`, error);
     throw error;
