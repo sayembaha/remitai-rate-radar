@@ -17,6 +17,9 @@ export type Database = {
           email: string
           id: string
           is_active: boolean | null
+          last_triggered_at: string | null
+          last_triggered_rate: number | null
+          notification_count: number | null
           threshold_rate: number
           updated_at: string
         }
@@ -27,6 +30,9 @@ export type Database = {
           email: string
           id?: string
           is_active?: boolean | null
+          last_triggered_at?: string | null
+          last_triggered_rate?: number | null
+          notification_count?: number | null
           threshold_rate: number
           updated_at?: string
         }
@@ -37,6 +43,9 @@ export type Database = {
           email?: string
           id?: string
           is_active?: boolean | null
+          last_triggered_at?: string | null
+          last_triggered_rate?: number | null
+          notification_count?: number | null
           threshold_rate?: number
           updated_at?: string
         }

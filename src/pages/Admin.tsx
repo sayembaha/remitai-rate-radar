@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
-import { LogOut, Save } from "lucide-react";
+import { LogOut, Save, Bell } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 
 type ExchangeRate = {
@@ -21,6 +20,7 @@ export default function Admin() {
   const [exchangeRates, setExchangeRates] = useState<ExchangeRate[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [checkingAlerts, setCheckingAlerts] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -129,6 +129,39 @@ export default function Admin() {
     navigate("/auth");
   };
 
+  const handleCheckAlerts = async () => {
+    setCheckingAlerts(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('check-alerts', {
+        method: 'POST',
+      });
+
+      if (error) {
+        console.error('Error checking alerts:', error);
+        toast({
+          title: "Error",
+          description: "Failed to check alerts. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Alerts Checked",
+        description: `Alert check completed. ${data?.notificationsSent || 0} notifications sent.`,
+      });
+    } catch (error: any) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setCheckingAlerts(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -162,6 +195,24 @@ export default function Admin() {
             </button>
           </div>
         </div>
+
+        <Card className="p-6 mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Alert System</h2>
+            <button
+              onClick={handleCheckAlerts}
+              disabled={checkingAlerts}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+            >
+              <Bell className="w-4 h-4" />
+              {checkingAlerts ? "Checking..." : "Check Alerts Now"}
+            </button>
+          </div>
+          <p className="text-gray-600">
+            Manually trigger the alert checking system to test email notifications. 
+            The system also runs automatically every minute.
+          </p>
+        </Card>
 
         <Card className="p-6">
           <div className="flex justify-between items-center mb-4">
