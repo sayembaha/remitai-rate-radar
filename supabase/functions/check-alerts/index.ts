@@ -36,9 +36,9 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     console.log('Starting alert check...');
 
-    // Check if Resend API key is available
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    if (!resendApiKey) {
+    // Check if Resend API key is available and clean it
+    const rawResendApiKey = Deno.env.get('RESEND_API_KEY');
+    if (!rawResendApiKey) {
       console.error('RESEND_API_KEY environment variable is not set');
       return new Response(JSON.stringify({ 
         error: 'Email service not configured. RESEND_API_KEY is missing.' 
@@ -48,8 +48,23 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    console.log('Resend API key found, initializing client...');
-    const resend = new Resend(resendApiKey);
+    // Clean the API key to remove any potential invisible characters
+    const resendApiKey = rawResendApiKey.trim().replace(/[^\w\-_.]/g, '');
+    console.log('Resend API key found and cleaned, initializing client...');
+    
+    let resend;
+    try {
+      resend = new Resend(resendApiKey);
+      console.log('Resend client initialized successfully');
+    } catch (resendError) {
+      console.error('Failed to initialize Resend client:', resendError);
+      return new Response(JSON.stringify({ 
+        error: 'Failed to initialize email service. Please check API key format.' 
+      }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
+    }
 
     // Get current exchange rates
     const { data: rates, error: ratesError } = await supabase
