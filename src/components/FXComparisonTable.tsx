@@ -127,7 +127,7 @@ export default function FXComparisonTable() {
     <Card className="w-full bg-white shadow-md rounded-xl p-0 overflow-x-auto border max-w-3xl mx-auto">
       <table className="min-w-full text-left text-sm">
         <thead>
-          <tr className="bg-gradient-to-r from-blue-50 via-green-50 to-cyan-50 text-gray-900">
+          <tr className="bg-gradient-to-r from-sky-400 to-indigo-500 text-white">
             <th className="px-4 py-3 font-bold">Platform</th>
             <th className="px-4 py-3 font-medium flex items-center gap-1">
               FX Rate <DollarSign className="inline w-4 h-4 text-blue-500" />
