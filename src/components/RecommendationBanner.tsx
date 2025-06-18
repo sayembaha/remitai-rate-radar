@@ -37,7 +37,7 @@ export default function RecommendationBanner() {
       <div>
         <div className="text-lg font-semibold">Recommended: {aiPickPlatform}</div>
         <div className="text-sm opacity-90">
-          Our AI recommends <span className="font-bold">{aiPickPlatform}</span> for this corridor,<br className="hidden sm:inline"/> as it offers the best FX rate and lowest fees right now.
+          Our AI recommends <span className="font-bold">{aiPickPlatform}</span> for remitting USD to Bangladesh right now.
         </div>
       </div>
     </div>
