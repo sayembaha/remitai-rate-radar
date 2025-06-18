@@ -95,6 +95,7 @@ export default function Admin() {
     try {
       const updates = exchangeRates.map(rate => ({
         id: rate.id,
+        platform_name: rate.platform_name,
         exchange_rate: rate.exchange_rate,
         transfer_fee: rate.transfer_fee,
         delivery_time: rate.delivery_time,
