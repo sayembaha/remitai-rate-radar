@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
-import { LogOut, Save, Bell } from "lucide-react";
+import ScraperConfig from "@/components/ScraperConfig";
+import { LogOut, Save, Bell, RefreshCw, Clock } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 
 type ExchangeRate = {
@@ -22,6 +23,8 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [checkingAlerts, setCheckingAlerts] = useState(false);
+  const [scraping, setScraping] = useState(false);
+  const [settingUpCron, setSettingUpCron] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -164,6 +167,76 @@ export default function Admin() {
     }
   };
 
+  const handleManualScraping = async () => {
+    setScraping(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('scrape-exchange-rates', {
+        method: 'POST',
+        body: { manual: true },
+      });
+
+      if (error) {
+        console.error('Error scraping rates:', error);
+        toast({
+          title: "Error",
+          description: "Failed to scrape exchange rates. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Scraping Complete",
+        description: `Successfully updated ${data?.rates_updated || 0} exchange rates.`,
+      });
+      
+      // Refresh the exchange rates after scraping
+      await fetchExchangeRates();
+    } catch (error: any) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred during scraping.",
+        variant: "destructive",
+      });
+    } finally {
+      setScraping(false);
+    }
+  };
+
+  const handleSetupCron = async () => {
+    setSettingUpCron(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('setup-rate-scraping-cron', {
+        method: 'POST',
+      });
+
+      if (error) {
+        console.error('Error setting up cron job:', error);
+        toast({
+          title: "Error",
+          description: "Failed to setup automatic scraping. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Cron Job Setup",
+        description: "Automatic scraping is now configured to run every 6 hours.",
+      });
+    } catch (error: any) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred setting up the cron job.",
+        variant: "destructive",
+      });
+    } finally {
+      setSettingUpCron(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -200,6 +273,36 @@ export default function Admin() {
 
         <Card className="p-6 mb-6">
           <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Rate Scraping System</h2>
+            <div className="flex gap-2">
+              <button
+                onClick={handleManualScraping}
+                disabled={scraping}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${scraping ? 'animate-spin' : ''}`} />
+                {scraping ? "Scraping..." : "Scrape Now"}
+              </button>
+              <button
+                onClick={handleSetupCron}
+                disabled={settingUpCron}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
+              >
+                <Clock className="w-4 h-4" />
+                {settingUpCron ? "Setting up..." : "Setup Auto-Scraping"}
+              </button>
+            </div>
+          </div>
+          <div className="space-y-2 text-sm text-gray-600">
+            <p>• <strong>Manual Scraping:</strong> Immediately scrape all platforms for current rates</p>
+            <p>• <strong>Auto-Scraping:</strong> Set up automated scraping every 6 hours</p>
+            <p>• <strong>Platforms:</strong> Wise, Remitly, Xoom, Western Union, MoneyGram</p>
+            <p>• <strong>Countries:</strong> UAE, Saudi Arabia, USA</p>
+          </div>
+        </Card>
+
+        <Card className="p-6 mb-6">
+          <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Alert System</h2>
             <button
               onClick={handleCheckAlerts}
@@ -215,6 +318,8 @@ export default function Admin() {
             The system also runs automatically every minute.
           </p>
         </Card>
+
+        <ScraperConfig />
 
         <Card className="p-6">
           <div className="flex justify-between items-center mb-4">
