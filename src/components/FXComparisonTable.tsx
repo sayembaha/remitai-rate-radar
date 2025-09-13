@@ -13,6 +13,11 @@ type Platform = {
   estDelivery: string;
   total: number;
   aiReco?: boolean;
+  senderCountry?: string;
+};
+
+type FXComparisonTableProps = {
+  selectedCountry: string;
 };
 
 const platformLogos: Record<string, string> = {
@@ -24,19 +29,20 @@ const platformLogos: Record<string, string> = {
   "WorldRemit": "🟧",
 };
 
-export default function FXComparisonTable() {
+export default function FXComparisonTable({ selectedCountry }: FXComparisonTableProps) {
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchExchangeRates();
-  }, []);
+  }, [selectedCountry]);
 
   const fetchExchangeRates = async () => {
     try {
       const { data, error } = await supabase
         .from("exchange_rates")
         .select("*")
+        .eq("sender_country", selectedCountry)
         .order("exchange_rate", { ascending: false });
 
       if (error) {

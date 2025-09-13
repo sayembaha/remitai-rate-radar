@@ -13,6 +13,7 @@ type ExchangeRate = {
   transfer_fee: number;
   delivery_time: string;
   is_ai_pick: boolean;
+  sender_country: string;
 };
 
 export default function Admin() {
@@ -100,6 +101,7 @@ export default function Admin() {
         transfer_fee: rate.transfer_fee,
         delivery_time: rate.delivery_time,
         is_ai_pick: rate.is_ai_pick,
+        sender_country: rate.sender_country,
         updated_at: new Date().toISOString()
       }));
 
@@ -230,7 +232,7 @@ export default function Admin() {
           <div className="space-y-4">
             {exchangeRates.map((rate) => (
               <div key={rate.id} className="border rounded-lg p-4 bg-gray-50">
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+                <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-center">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Platform
@@ -274,6 +276,21 @@ export default function Admin() {
                       onChange={(e) => handleInputChange(rate.id, "delivery_time", e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Sender Country
+                    </label>
+                    <select
+                      value={rate.sender_country}
+                      onChange={(e) => handleInputChange(rate.id, "sender_country", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="UAE">🇦🇪 UAE</option>
+                      <option value="Saudi Arabia">🇸🇦 Saudi Arabia</option>
+                      <option value="USA">🇺🇸 USA</option>
+                    </select>
                   </div>
 
                   <div>
