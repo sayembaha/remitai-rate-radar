@@ -133,7 +133,6 @@ export default function FXComparisonTable() {
               FX Rate <DollarSign className="inline w-4 h-4 text-blue-500" />
             </th>
             <th className="px-4 py-3 font-medium">Fee</th>
-            <th className="px-4 py-3 font-medium flex items-center gap-1">Est. Delivery <Calendar className="inline w-4 h-4" /></th>
             <th className="px-4 py-3 font-medium">Total Received</th>
             <th className="px-4 py-3" />
           </tr>
@@ -155,7 +154,6 @@ export default function FXComparisonTable() {
               <td className="px-4 py-2 whitespace-nowrap">
                 ${p.fee.toFixed(2)}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap">{p.estDelivery}</td>
               <td className="px-4 py-2 whitespace-nowrap font-bold text-blue-600">{p.total.toFixed(2)}</td>
               <td className="px-4 py-2">
                 {p.aiReco && (
