@@ -177,7 +177,7 @@ export default function Admin() {
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-blue-700">RemitAI Admin Panel</h1>
+            <h1 className="text-3xl font-bold text-blue-700">RemitBD Admin Panel</h1>
             <p className="text-gray-600">Manage exchange rates and platform data</p>
             {user && <p className="text-sm text-gray-500">Logged in as: {user.email}</p>}
           </div>
