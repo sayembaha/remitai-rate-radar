@@ -16,7 +16,7 @@ export default function Index() {
       <header className="bg-white/80 sticky top-0 z-20 border-b shadow-sm mb-8 p-4 flex justify-between items-center">
         <div className="flex items-center gap-2 text-2xl font-bold tracking-tight text-blue-700">
           <span className="bg-gradient-to-tr from-blue-500 to-green-400 text-white px-3 py-1 rounded-xl mr-2">RemitBD</span>
-          <span className="hidden sm:inline text-lg text-gray-700 font-medium tracking-wide">Global Remittance Hub</span>
+          <span className="hidden sm:inline text-lg text-gray-700 font-medium tracking-wide">FX rate comparison for sending remittance to Bangladesh</span>
         </div>
         <nav>
           <Link 
